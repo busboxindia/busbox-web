@@ -159,7 +159,7 @@ function PhoneScreen({ step }: { step: number }) {
         <div className="ps ps-book">
           <div className="ps-title">Send a parcel</div>
           <div className="ps-field"><span className="ps-dot navy" /> <div><small>Pickup</small><b>Bengaluru</b></div></div>
-          <div className="ps-field"><span className="ps-dot orange" /> <div><small>Drop</small><b>Mysuru</b></div></div>
+          <div className="ps-field"><span className="ps-dot orange" /> <div><small>Drop</small><b>Mangaluru</b></div></div>
           <div className="ps-field"><span className="ps-dot box"><Icon name="package" size={12} /></span> <div><small>Sending</small><b>Gift box</b></div></div>
           <div className="ps-price"><small>Next traveller on this route</small><b>Leaving soon</b><span>Verified · tracked live</span></div>
           <div className="ps-btn">Book delivery</div>
@@ -205,7 +205,7 @@ function PhoneScreen({ step }: { step: number }) {
           </div>
           <div className="ps-sheet">
             <span className="ps-chip live"><span className="live-dot" /> Live</span>
-            <b>On the way to Mysuru</b>
+            <b>On the way to Mangaluru</b>
             <small>Tracked from pickup to doorstep</small>
           </div>
         </div>
