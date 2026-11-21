@@ -1,18 +1,21 @@
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Home from './pages/Home';
 import Track from './pages/Track';
 import { LegalPage } from './pages/Legal';
-import { config, mailtoUrl, prettyPhone, whatsappUrl } from './config';
+import { config, mailtoUrl, whatsappUrl } from './config';
 import { Icon, WhatsAppIcon } from './components/Icon';
 
-export function Wordmark({ light = false }: { light?: boolean }) {
+export function Wordmark({ light = false, tagline = false }: { light?: boolean; tagline?: boolean }) {
   return (
     <Link to="/" className={`wordmark${light ? ' light' : ''}`} aria-label="BUSBOX home">
       <img src="/favicon.svg" alt="" width={30} height={30} />
-      <span>
-        <span className="bus">BUS</span>
-        <span className="box">BOX</span>
+      <span className="wordmark-text">
+        <span className="wordmark-name">
+          <span className="bus">BUS</span>
+          <span className="box">BOX</span>
+        </span>
+        {tagline && <span className="wordmark-tag">Closer than you think</span>}
       </span>
     </Link>
   );
@@ -40,17 +43,22 @@ export function StoreBadges() {
 }
 
 const navLinks = [
-  ['About', '/#about'],
+  ['The idea', '/#idea'],
   ['How it works', '/#how-it-works'],
+  ['Safety', '/#safety'],
+  ['FAQ', '/#faq'],
   ['Contact', '/#contact'],
 ] as const;
 
 export default function App() {
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, key } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState('');
+  const progressRef = useRef<HTMLDivElement>(null);
 
   // New page: go to the top, or to the section named in the URL (e.g. /#contact from the Terms page).
+  // `key` changes on every click, so clicking the same link twice still scrolls.
   useEffect(() => {
     setMenuOpen(false);
     if (hash) {
@@ -58,23 +66,45 @@ export default function App() {
       return () => window.clearTimeout(t);
     }
     window.scrollTo(0, 0);
-  }, [pathname, hash]);
+  }, [pathname, hash, key]);
 
+  // Header shadow and the reading-progress bar.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 8);
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (progressRef.current) progressRef.current.style.transform = `scaleX(${max > 0 ? Math.min(1, window.scrollY / max) : 0})`;
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    window.addEventListener('resize', onScroll);
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+  }, [pathname]);
+
+  // Underline the nav link for the section on screen.
+  useEffect(() => {
+    setActive('');
+    if (pathname !== '/' || !('IntersectionObserver' in window)) return;
+    const els = navLinks.map(([, to]) => document.getElementById(to.split('#')[1])).filter(Boolean) as HTMLElement[];
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); }),
+      { rootMargin: '-40% 0px -55% 0px' },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [pathname]);
 
   return (
     <>
       <header className={`nav${scrolled ? ' scrolled' : ''}${menuOpen ? ' open' : ''}`}>
+        <div className="nav-progress" ref={progressRef} aria-hidden="true" />
         <div className="container">
-          <Wordmark />
+          <Wordmark tagline />
           <div className="spacer" />
           <nav className="nav-links" aria-label="Main">
-            {navLinks.map(([label, to]) => <Link key={to} className="link" to={to}>{label}</Link>)}
+            {navLinks.map(([label, to]) => (
+              <Link key={to} className={`link${active === to.split('#')[1] ? ' active' : ''}`} to={to}>{label}</Link>
+            ))}
           </nav>
           <Link className="btn btn-primary nav-cta" to="/#get-started">Get Started</Link>
           <button className="nav-toggle" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen}
@@ -114,6 +144,8 @@ export default function App() {
               <h4>Company</h4>
               <Link to="/#about">About Us</Link>
               <Link to="/#how-it-works">How It Works</Link>
+              <Link to="/#safety">Safety</Link>
+              <Link to="/#faq">FAQ</Link>
               <Link to="/#contact">Contact</Link>
             </div>
             <div>
@@ -127,7 +159,7 @@ export default function App() {
               <h4>Get in touch</h4>
               <a href={mailtoUrl()} className="foot-contact"><Icon name="mail" size={16} /> {config.supportEmail}</a>
               <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" className="foot-contact">
-                <WhatsAppIcon size={16} /> {prettyPhone()}
+                <WhatsAppIcon size={16} /> Message us on WhatsApp
               </a>
             </div>
           </div>

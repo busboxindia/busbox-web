@@ -1,4 +1,4 @@
-import { config } from '../config';
+import { config, whatsappUrl } from '../config';
 import { TERMS_SECTIONS, TERMS_UPDATED } from './termsText';
 
 type Doc = 'terms' | 'privacy' | 'refunds' | 'prohibited';
@@ -21,7 +21,7 @@ export function LegalPage({ doc }: { doc: Doc }) {
       {doc === 'refunds' && <Refunds />}
       {doc === 'prohibited' && <Prohibited />}
       <p className="muted small" style={{ marginTop: 32 }}>
-        Last updated {UPDATED}. Questions: <a href={`mailto:${config.supportEmail}`}>{config.supportEmail}</a> · {config.supportPhone}
+        Last updated {UPDATED}. Questions: <a href={`mailto:${config.supportEmail}`}>{config.supportEmail}</a> · <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a>
       </p>
     </div>
   );
